@@ -14,10 +14,18 @@
             </li>
             <?php if($allow->kasir == 'ya'){ ?>
             <li class="nav-item <?php echo ($page == 'kasir' ? 'active' : ''); ?>">
-                <a class="nav-link" href="<?=base_url('kasir')?>">
+                <a class="nav-link" href="javascript:void(0)" data-toggle='collapse' data-target='#kasirChildren'>
                     <i class="fa fa-heart"></i>
                     <span class="nav-link-text">Kasir</span>
-                </a>                
+                </a>  
+                <ul id="kasirChildren" class="nav flex-column collapse collapse-level-1">
+                    <li class='nav-item'>
+                        <a href='<?=base_url('kasir')?>' class='nav-link'>Pembayaran Jasa Service</a>
+                    </li>
+                    <li class='nav-item'>
+                        <a href='<?=base_url('pembayaran-penjualan-selesai')?>' class='nav-link'>Pembayaran Penjualan Sparepart</a>
+                    </li>
+                </ul>              
             </li>
             <?php }if($allow->task_teknisi == 'ya'){ ?>
             <li class="nav-item <?php echo ($page == 'task_teknisi' ? 'active' : ''); ?>">

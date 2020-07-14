@@ -40,6 +40,9 @@
                     render : function(data){
                         return  `<a href='<?=site_url('detail-penjualan/')?>${data.id}'>
                                     <span class='fa fa-list opsi text-info cp'></span>
+                                </a>
+                                <a class='ml-2' href='<?=site_url('penjualan-export/pdf/')?>${data.id}' title='Export ke PDF'>
+                                    <span class='fa fa-file-pdf-o text-warning cp opsi'></span>
                                 </a>`;
                     }
                 }

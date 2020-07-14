@@ -21,7 +21,7 @@
                     if($detailPembelian->num_rows() >= 1){ 
                         $detailPembelian    =   $detailPembelian->row();
 
-                        if(strtolower($detailPembelian->statusBelanja) === 'pending'){
+                        if(strtolower($detailPembelian->statusBelanja) === 'start'){
                 ?>      
                     <div class="row">                
                         <div class="col-xl-8 border-right">

@@ -87,12 +87,17 @@
                                         <tr class='text-sm'>
                                             <td class='no-border-top text-left'>Total Belanja</td>
                                             <td class='no-border-top text-center'>:</td>
-                                            <td class='no-border-top text-left text-success'>Rp. <?=number_format($detailPenjualan->totalBelanja)?></td>
+                                            <td class='no-border-top text-left text-info'>Rp. <?=number_format($detailPenjualan->totalBelanja)?></td>
                                         </tr>
                                         <tr class='text-sm'>
                                             <td class='no-border-top text-left'>Diskon</td>
                                             <td class='no-border-top text-center'>:</td>
-                                            <td class='no-border-top text-left text-success'>Rp. <?=number_format($detailPenjualan->diskon)?></td>
+                                            <td class='no-border-top text-left text-warning'>Rp. <?=number_format($detailPenjualan->diskon)?></td>
+                                        </tr>
+                                        <tr class='text-sm'>
+                                            <td class='no-border-top text-left'>Total Bersih</td>
+                                            <td class='no-border-top text-center'>:</td>
+                                            <td class='no-border-top text-left text-success'>Rp. <?=number_format($detailPenjualan->totalBelanja - $detailPenjualan->diskon)?></td>
                                         </tr>
                                         
                                         <span class="statusPenjualan <?=$colorStatusPenjualan?>">
@@ -113,6 +118,7 @@
                                                 <th class="text-right">Harga</th>
                                                 <th class="text-right">Quantity</th>
                                                 <th class="text-right">Total</th>
+                                                <th class="text-left">Produk Tersedia</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -127,10 +133,21 @@
                                                     <td class="text-right text-success">
                                                         <b>Rp. <?=number_format($item['totalHarga'])?></b>
                                                     </td>
+                                                    <td class='text-left'>
+                                                        <span class='badge badge-<?=($item['produkAda'] == 1)? 'success' : 'danger'?>'>
+                                                            <?=($item['produkAda'] == 1)? 'Tersedia' : 'Tidak Tersedia'?>
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
                                     </table>
+                                    <hr />
+                                    <a href='<?=site_url('detail-penjualan-pdf/')?><?=$idPenjualan?>'>
+                                        <button class='btn btn-warning'>
+                                            Download Detail Penjualan (PDF)
+                                        </button>
+                                    </a>
                                 <?php }else{ ?>
                                     <div class="text-center py-4">
                                         <h4 class='mb-3'>Item Penjualan</h4>

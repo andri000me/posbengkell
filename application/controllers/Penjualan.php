@@ -20,7 +20,6 @@
         } 
         public function dataPenjualan(){    
             $statusPenjualan    =   $this->input->get('statusPenjualan');
-            $statusPenjualanSelected    =   (!is_null($statusPenjualan))? trim($statusPenjualan) : 'selesai'; 
 
             $column     =   $this->input->get('column');
             $start      =   $this->input->get('start');
@@ -40,7 +39,11 @@
                 }
             }
 
-            $this->db->where('statusPenjualan', $statusPenjualanSelected);
+            if(!is_null($statusPenjualan)){
+                $this->db->where('statusPenjualan', $statusPenjualanSelected);
+            }else{
+                $this->db->where_in('statusPenjualan', ['selesai', 'batal']);
+            }
             $this->db->order_by('id', 'desc');
             $listDataPenjualan   =   $this->db->get('view_penjualan');
 
@@ -100,7 +103,7 @@
             $sessionIDPenjualan     =   $this->session->userdata('sessionIDPenjualan');
             if($idPenjualan === false && is_null($sessionIDPenjualan)){
                 $idBengkel  =   $this->session->userdata('idbengkel');
-                $dataMasterPenjualan    =   ['statusPenjualan' =>  'pending', 'idBengkel' => $idBengkel];
+                $dataMasterPenjualan    =   ['statusPenjualan' =>  'start', 'idBengkel' => $idBengkel];
                 $insertMasterPenjualan  =   $this->db->insert('tbl_penjualan', $dataMasterPenjualan);
 
                 $idPenjualan    =   $this->db->insert_id();
@@ -206,42 +209,76 @@
         }
         public function selesaikanPenjualan(){
             $idPenjualan    =   $this->input->post('idPenjualan');
-            $diskon         =   $this->input->post('diskon');
-            $tunai          =   $this->input->post('tunai');
 
             $statusSelesaikanPenjualan      =   false;
-            $statusKurangiStokProduk        =   false;
-            if(!is_null($idPenjualan) && !is_null($tunai)){
-                $diskon     =   (is_null($diskon))? 0 : $diskon;
+            if(!is_null($idPenjualan)){
+                $stringID       =   str_pad($idPenjualan, 4, 0, STR_PAD_LEFT);
 
-                $this->db->select('totalBelanja');
+                $nomorTransaksi     =   'J'.$stringID;
+                $dataPenyelesaian   =   [
+                    'statusPenjualan'   =>  'pending',
+                    'nomorTransaksi'    =>  $nomorTransaksi
+                ];
+
                 $this->db->where('id', $idPenjualan);
-                $totalBelanja    =   $this->db->get('view_penjualan')->row()->totalBelanja;
+                $selesaikanPenjualan        =   $this->db->update('tbl_penjualan', $dataPenyelesaian);
 
-                $totalBelanja   =   $totalBelanja - $diskon;
+                $sessionIDPenjualan =   $this->session->userdata('sessionIDPenjualan');
+                if(!is_null($sessionIDPenjualan)){
+                    $this->session->unset_userdata('sessionIDPenjualan');
+                }
 
-                if($tunai >= $totalBelanja){
-                    $stringID       =   str_pad($idPenjualan, 4, 0, STR_PAD_LEFT);
+                $statusSelesaikanPenjualan  =   ($selesaikanPenjualan)? true : false;
 
-                    $nomorTransaksi     =   'J'.$stringID;
-                    $dataPenyelesaian   =   [
-                        'statusPenjualan'   =>  'selesai',
-                        'diskon'            =>  $diskon,
-                        'tunai'             =>  $tunai,
-                        'nomorTransaksi'    =>  $nomorTransaksi
-                    ];
+                echo json_encode(['statusSelesaikanPenjualan' => $statusSelesaikanPenjualan]);
+            }
+        }
+        public function cekItemPenjualan($idPenjualan = false){
+            $authRole  = $this->session->userdata('roleuser');
 
-                    $this->db->where('id', $idPenjualan);
-                    $selesaikanPenjualan        =   $this->db->update('tbl_penjualan', $dataPenyelesaian);
+            $data['idPenjualan']    =   $idPenjualan;
 
-                    $this->db->select('idProduk, quantity');
-                    $this->db->where('idPenjualan', $idPenjualan);
-                    $listProduk     =   $this->db->get('tbl_penjualan_item');
+            if($idPenjualan === false){
+                $data['subtitle'] = ucwords(str_replace('_', ' ', $authRole));                 
+                $data['subtitle_small'] = 'List Penjualan Pending';
+                $data['page'] = 'penjualan-pending';            
+                $data['allow'] = $this->db->get_where('tbl_batasan_akses', ['role' => $authRole])->row();
+     
+                $this->themes->Display('penjualan/penjualanPending', $data);
+            }else{
+                $data['subtitle'] = ucwords(str_replace('_', ' ', $authRole));                 
+                $data['subtitle_small'] = 'Cek Item Penjualan Pending';
+                $data['page'] = 'cek-item-penjualan';            
+                $data['allow'] = $this->db->get_where('tbl_batasan_akses', ['role' => $authRole])->row();
+                
+                $this->db->where('idPenjualan', $idPenjualan);
+                $itemPenjualan  =   $this->db->get('view_penjualan_item')->result_array();
+                $data['itemPenjualan']  =   $itemPenjualan;
 
-                    if($listProduk->num_rows() >= 1){
-                        $kurangiStokBerhasil     =   0;
-                        $kurangiStokDone         =   0;
-                        foreach($listProduk->result_array() as $indexData => $produk){
+                $this->db->select('statusPenjualan');
+                $this->db->where('id', $idPenjualan);
+                $detailPenjualan    =   $this->db->get('view_penjualan');
+                $data['detailPenjualan']    =   $detailPenjualan;
+     
+                $this->themes->Display('penjualan/cekItemPenjualan', $data);
+            }
+        }
+        public function pengecekanSelesai($idPenjualan = false){
+            if($idPenjualan !== false){
+                $statusPenyelesaian =   false;
+
+                if(isset($_POST['itemPenjualan'])){
+                    $itemChecked    =   $_POST['itemPenjualan'];
+
+                    foreach($itemChecked as $itemPenjualan){
+                        $this->db->select('idProduk, quantity');
+                        $this->db->where('idPenjualan', $idPenjualan);
+                        $this->db->where('idProduk', $itemPenjualan);
+                        $isProductExist     =   $this->db->get('tbl_penjualan_item');
+
+                        if($isProductExist->num_rows() >= 1){
+                            $produk     =   $isProductExist->row_array();
+
                             $idProduk   =   $produk['idProduk'];
                             $jumlahJual =   $produk['quantity'];
 
@@ -251,24 +288,116 @@
 
                             $stokBaru       =   $detailProduk->stok - $jumlahJual;
                             $this->db->where('id', $idProduk);
-                            $kurangiStok     =   $this->db->update('tbl_spare_part', ['stok' => $stokBaru]);
+                            $tambahStok     =   $this->db->update('tbl_spare_part', ['stok' => $stokBaru]);
 
-                            if($kurangiStok){
-                                $kurangiStokBerhasil++;
-                            }
-                            $kurangiStokDone++;
+                            $this->db->where('idPenjualan', $idPenjualan);
+                            $this->db->where('idProduk', $itemPenjualan);
+                            $updateProdukAda     =   $this->db->update('tbl_penjualan_item', ['produkAda' => 1]);
                         }
-                    }
-
-                    $statusSelesaikanPenjualan  =   $kurangiStokBerhasil >= 1 && $kurangiStokDone >= 1 && $kurangiStokBerhasil === $kurangiStokDone && $selesaikanPenjualan;
-                    
-                    $sessionIDPenjualan =   $this->session->userdata('sessionIDPenjualan');
-                    if(!is_null($sessionIDPenjualan)){
-                        $this->session->unset_userdata('sessionIDPenjualan');
                     }
                 }
 
-                echo json_encode(['statusSelesaikanPenjualan' => $statusSelesaikanPenjualan]);
+                $this->db->where('id', $idPenjualan);
+                $pengecekanSelesai  =   $this->db->update('tbl_penjualan', ['statusPenjualan' => 'selesai']);
+                
+                $statusPenyelesaian =   ($pengecekanSelesai)? true : false;
+
+                echo json_encode(['statusPenyelesaian' => $statusPenyelesaian]);
+            }
+        }
+        public function cetakSuratJalan($idPenjualan){
+            $this->load->library('pdf');
+            $this->pdf->setPaper('a4', 'landscape');
+
+            $dataPDF    =   ['idPenjualan' => $idPenjualan];
+
+            $this->pdf->load_view('penjualan/suratJalan', $dataPDF);
+        }
+        public function exportDetailPenjualan($exportTo = 'pdf', $idPenjualan = false){
+            $exportTo   =   trim(strtolower($exportTo));
+            
+            $detailPenjualan    =   false;
+            
+            if($idPenjualan !== false){
+                $this->db->where('id', $idPenjualan);
+                $getDetailPenjualan    =   $this->db->get('view_penjualan');
+
+                if($getDetailPenjualan->num_rows() >= 1){
+                    $detailPenjualan    =   $getDetailPenjualan->row();
+                }
+            }
+
+            $dataPDF['detailPenjualan']    =   $detailPenjualan;
+
+            if($exportTo === 'pdf'){
+                $this->load->library('pdf');
+                $this->pdf->setPaper('A4', 'landscape');
+
+                $this->pdf->load_view('penjualan/exportDetailPenjualan', $dataPDF);
+            }
+        }
+        public function pembayaran($idPenjualan = false){
+            $authRole  = $this->session->userdata('roleuser');
+
+            $data['idPenjualan']    =   $idPenjualan;
+
+            if($idPenjualan === false){
+                $data['subtitle'] = ucwords(str_replace('_', ' ', $authRole));                 
+                $data['subtitle_small'] = 'List Penjualan Selesai';
+                $data['page'] = 'penjualan-selesai';            
+                $data['allow'] = $this->db->get_where('tbl_batasan_akses', ['role' => $authRole])->row();
+     
+                $this->themes->Display('penjualan/penjualanSelesai', $data);
+            }else{
+                $data['subtitle'] = ucwords(str_replace('_', ' ', $authRole));                 
+                $data['subtitle_small'] = 'Pembayaran Penjualan Selesai';
+                $data['page'] = 'pembayaran-penjualan-selesai';            
+                $data['allow'] = $this->db->get_where('tbl_batasan_akses', ['role' => $authRole])->row();
+                
+                $this->db->where('idPenjualan', $idPenjualan);
+                $itemPenjualan  =   $this->db->get('view_penjualan_item')->result_array();
+                $data['itemPenjualan']  =   $itemPenjualan;
+
+                $this->db->where('id', $idPenjualan);
+                $detailPenjualan    =   $this->db->get('view_penjualan');
+                $data['detailPenjualan']    =   $detailPenjualan;
+     
+                $this->db->select('sum(totalHarga) as grandTotal');
+                $this->db->where('idPenjualan', $idPenjualan);
+                $grandTotal  =   $this->db->get('view_penjualan_item')->row()->grandTotal;
+                $data['grandTotal'] =   $grandTotal;   
+
+                $this->themes->Display('penjualan/pembayaranPenjualanSelesai', $data);
+            }
+        }
+        public function lunas($idPenjualan = false){
+            if($idPenjualan !== false){
+                $statusPelunasan    =   false;
+
+                $diskon         =   $this->input->post('diskon');
+                $tunai          =   $this->input->post('bayar');
+
+                $this->db->select('totalBelanja');
+                $this->db->where('id', $idPenjualan);
+                $totalBelanja    =   $this->db->get('view_penjualan')->row()->totalBelanja;
+
+                $totalBelanjaBersih     =   $totalBelanja - $diskon;
+                if($tunai >= $totalBelanjaBersih){
+                    $dataPelunasan  =   [
+                        'diskon'    =>  $diskon,
+                        'tunai'     =>  $tunai,
+                        'statusPenjualan'   =>  'lunas'
+                    ];
+
+                    $this->db->where('id', $idPenjualan);
+                    $pelunasanPenjualan =   $this->db->update('tbl_penjualan', $dataPelunasan);
+
+                    if($pelunasanPenjualan){
+                        $statusPelunasan    =   true;
+                    }
+                }
+
+                echo json_encode(['statusPelunasan' => $statusPelunasan]);
             }
         }
     }

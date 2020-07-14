@@ -45,7 +45,8 @@
                                 class='pb-4 img-pilihan-belanja' /> 
                             <?php if($penjualanPending->num_rows() >= 1){ ?>
                                 <p class="text-sm text-center text-muted" style='font-size:10pt;'>
-                                    Lanjutkan belanja yang belum sempat diselesaikan. Ada <span class="badge badge-info"><?=$penjualanPending->num_rows()?></span> penjualan pending.
+                                    Lanjutkan belanja yang belum sempat diselesaikan. 
+                                    Ada <span class="badge badge-info"><?=$penjualanPending->num_rows()?></span> penjualan pending.
                                 </p> 
                             <?php }else{ ?>
                                 <p class="text-sm text-center text-danger" style='font-size:10pt;'>

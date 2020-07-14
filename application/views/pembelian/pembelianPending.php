@@ -28,17 +28,23 @@
                                     <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 col-xs-12">
                                         <div class="card">
                                             <div class="card-box p-3">
-                                                <h6>Pembelian <span class="text-info">#<?=$pembelianPending['id']?></span></h6>
+                                                <h6>Pembelian ke Vendor <span class="text-info"><?=$pembelianPending['namaVendor']?></span></h6>
                                                 <span class="text-muted">
                                                     Nomor Transaksi <span class="badge badge-success"><?=$pembelianPending['nomorTransaksi']?></span>
                                                 </span>
 
                                                 <p class="text-success mt-3" style='font-size:15pt'>Rp. <?=number_format($pembelianPending['totalBelanja'])?></p>
                                                 <hr />
-                                                <a href='<?=site_url("lanjutkan-pembelian-pending/")?><?=$pembelianPending['id']?>'>
-                                                    <button class="btn btn-success btn-sm mr-1">
+                                                <a href='<?=site_url("pembelian-cek-item/")?><?=$pembelianPending['id']?>'>
+                                                    <button class="btn btn-success btn-sm mr-1 btn-block mb-1">
                                                         <span class="fa fa-shopping-cart mr-2"></span>
-                                                        Lanjutkan
+                                                        Cek Item
+                                                    </button>
+                                                </a>
+                                                <a href='<?=site_url("cetak-surat-jalan-pembelian/")?><?=$pembelianPending['id']?>'>
+                                                    <button class="btn btn-warning btn-sm mr-1 btn-block">
+                                                        <span class="fa fa-print mr-2"></span>
+                                                        Cetak Surat Jalan
                                                     </button>
                                                 </a>
                                             </div>

@@ -18,23 +18,13 @@
         <div class="row">
             <div class="col-xl-12">      
                 <?php 
-                    
                     if($detailPenjualan->num_rows() >= 1){ 
                         $detailPenjualan    =   $detailPenjualan->row();
 
-                        if(strtolower($detailPenjualan->statusPenjualan) === 'start'){
+                        if(strtolower($detailPenjualan->statusPenjualan) === 'pending'){
                 ?>      
                     <div class="row">                
                         <div class="col-xl-8 border-right">
-                            <div class="row">
-                                <div class="col-xl-12">
-                                    <div class="form-group">
-                                        <label for="cariProduk">Cari Sparepart</label>
-                                        <input type="text" class='form-control form-control-sm' placeholder='Cari Sparepart dengan Nama atau Kode' id='cariProduk' />
-                                    </div>
-                                </div>
-                            </div>
-                            <hr class='my-2' />
                             <div class="row">
                                 <div class="col-xl-12 table-responsive">
                                     <table class="table-sm table table-striped">
@@ -67,13 +57,19 @@
                                                     <th class='text-right'><?=$item['quantity']?> item</th>
                                                     <th class='text-right'>Rp. <?=number_format($totalHargaItem)?></th>
                                                     <th class='text-right'>
-                                                        <span class="fa fa-trash text-danger cp"
-                                                            onClick='hapusItem(this, "<?=$item['idProduk']?>")'></span>
+                                                        <input type='checkbox' name='itemPenjualan[]' class='item' value='<?=$item['idProduk']?>' />
                                                     </th>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
                                     </table>
+                                    <hr />
+                                    <button class='btn btn-success mr-1' id='semuaAda'>Semua Ada</button>
+                                    <button class='btn btn-danger ml-1' id='semuaTidakAda'>Semua Tidak Ada</button>
+                                    <hr />
+                                    <p>
+                                        <span class='text-danger'>Centang Item Yang dijual jika memang item tersedia</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -84,9 +80,9 @@
                             <hr class="my-4" />
                             <div id='buttons'>
                                 <div id="btnSelesai" class='mb-2'>
-                                    <button class="btn btn-success btn-block" id='selesai' onClick='selesai()'>Selesai</button>
+                                    <button class="btn btn-success btn-block" id='selesai' 
+                                        onClick='cekItemPenjualanSelesai()'>Selesai</button>
                                 </div>
-                                <button class="btn btn-danger btn-block" id='batal' onClick='batal()'>Batalkan Transaksi Ini</button>
                             </div>
                         </div>
                     </div>

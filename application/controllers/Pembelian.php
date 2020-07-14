@@ -20,8 +20,7 @@
         }   
         public function dataPembelian(){    
             $statusPembelian    =   $this->input->get('statusPembelian');
-            $statusPembelianSelected    =   (!is_null($statusPembelian))? trim($statusPembelian) : 'selesai'; 
-            
+
             $column     =   $this->input->get('column');
             $start      =   $this->input->get('start');
             $end        =   $this->input->get('end');       
@@ -39,8 +38,13 @@
                     $this->db->where($column.' <=', $end);
                 }
             }
+             
+            if(!is_null($statusPembelian)){
+                $this->db->where('statusBelanja', $statusPembelianSelected);
+            }else{
+                $this->db->where_in('statusBelanja', ['selesai', 'batal']);
+            }
 
-            $this->db->where('statusBelanja', $statusPembelianSelected);
             $this->db->order_by('id', 'desc');
             $listDataPembelian   =   $this->db->get('view_pembelian');
 
@@ -100,7 +104,7 @@
             $sessionIDPembelian     =   $this->session->userdata('sessionIDPembelian');
             if($idPembelian === false && is_null($sessionIDPembelian)){
                 $idBengkel  =   $this->session->userdata('idbengkel');
-                $dataMasterPembelian    =   ['statusBelanja' =>  'pending', 'idBengkel' => $idBengkel];
+                $dataMasterPembelian    =   ['statusBelanja' =>  'start', 'idBengkel' => $idBengkel];
                 $insertMasterPembelian  =   $this->db->insert('tbl_pembelian', $dataMasterPembelian);
 
                 $idPembelian    =   $this->db->insert_id();
@@ -206,8 +210,8 @@
         }
         public function selesaikanPembelian(){
             $idPembelian    =   $this->input->post('idPembelian');
-            $idVendor    =   $this->input->post('idVendor');
-            $tunai    =   $this->input->post('tunai');
+            $idVendor       =   $this->input->post('idVendor');
+            $tunai          =   $this->input->post('tunai');
 
             $statusSelesaikanPembelian  =   false;
             $statusTambahStokProduk     =   false;
@@ -223,23 +227,56 @@
 
                     $nomorTransaksi     =   'B'.$stringVendor.$stringID;
                     $dataPenyelesaian   =   [
-                        'statusBelanja' =>  'selesai',
-                        'idVendor'      =>  $idVendor,
-                        'tunai'         =>  $tunai,
+                        'statusBelanja'     =>  'pending',
+                        'idVendor'          =>  $idVendor,
+                        'tunai'             =>  $tunai,
                         'nomorTransaksi'    =>  $nomorTransaksi
                     ];
 
                     $this->db->where('id', $idPembelian);
                     $selesaikanPembelian        =   $this->db->update('tbl_pembelian', $dataPenyelesaian);
 
-                    $this->db->select('idProduk, quantity');
-                    $this->db->where('idPembelian', $idPembelian);
-                    $listProduk     =   $this->db->get('tbl_pembelian_item');
+                    $statusSelesaikanPembelian  =   ($selesaikanPembelian)? true : false;
+                    
+                    $sessionIDPembelian =   $this->session->userdata('sessionIDPembelian');
+                    if(!is_null($sessionIDPembelian)){
+                        $this->session->unset_userdata('sessionIDPembelian');
+                    }
+                }
 
-                    if($listProduk->num_rows() >= 1){
-                        $tambahStokBerhasil     =   0;
-                        $tambahStokDone         =   0;
-                        foreach($listProduk->result_array() as $indexData => $produk){
+                echo json_encode(['statusSelesaikanPembelian' => $statusSelesaikanPembelian]);
+            }
+        }
+        function cekItem($idPembelian = false){
+            if($idPembelian !== false){         	
+                $authRole   =   $this->session->userdata('roleuser');
+
+                $idbengkel  =   $this->session->userdata('idbengkel');
+                $data['subtitle'] = ucwords(str_replace('_', ' ', $authRole));                 
+                $data['subtitle_small'] = 'Cek Item Pembelian';
+                $data['page'] = 'cek-item-pembelian';            
+                $data['allow'] = $this->db->get_where('tbl_batasan_akses', ['role' => $authRole])->row();
+                $data['idPembelian']    =   $idPembelian;
+    
+                $this->themes->Display('pembelian/cekItemPembelian', $data);    
+            }
+        }
+        public function pengecekanSelesai($idPembelian = false){
+            if($idPembelian !== false){
+                $statusPenyelesaian =   false;
+
+                if(isset($_POST['item'])){
+                    $itemChecked    =   $_POST['item'];
+
+                    foreach($itemChecked as $itemBelanja){
+                        $this->db->select('idProduk, quantity');
+                        $this->db->where('idPembelian', $idPembelian);
+                        $this->db->where('idProduk', $itemBelanja);
+                        $isProductExist     =   $this->db->get('tbl_pembelian_item');
+
+                        if($isProductExist->num_rows() >= 1){
+                            $produk     =   $isProductExist->row_array();
+
                             $idProduk   =   $produk['idProduk'];
                             $jumlahBeli =   $produk['quantity'];
 
@@ -251,22 +288,50 @@
                             $this->db->where('id', $idProduk);
                             $tambahStok     =   $this->db->update('tbl_spare_part', ['stok' => $stokBaru]);
 
-                            if($tambahStok){
-                                $tambahStokBerhasil++;
-                            }
-                            $tambahStokDone++;
+                            $this->db->where('idPembelian', $idPembelian);
+                            $this->db->where('idProduk', $itemBelanja);
+                            $updateProdukAda     =   $this->db->update('tbl_pembelian_item', ['produkAda' => 1]);
                         }
-                    }
-
-                    $statusSelesaikanPembelian  =   $tambahStokBerhasil >= 1 && $tambahStokDone >= 1 && $tambahStokBerhasil === $tambahStokDone && $selesaikanPembelian;
-                    
-                    $sessionIDPembelian =   $this->session->userdata('sessionIDPembelian');
-                    if(!is_null($sessionIDPembelian)){
-                        $this->session->unset_userdata('sessionIDPembelian');
                     }
                 }
 
-                echo json_encode(['statusSelesaikanPembelian' => $statusSelesaikanPembelian]);
+                $this->db->where('id', $idPembelian);
+                $pengecekanSelesai  =   $this->db->update('tbl_pembelian', ['statusBelanja' => 'selesai']);
+                
+                $statusPenyelesaian =   ($pengecekanSelesai)? true : false;
+
+                echo json_encode(['statusPenyelesaian' => $statusPenyelesaian]);
+            }
+        }
+        public function cetakSuratJalan($idPembelian){
+            $this->load->library('pdf');
+            $this->pdf->setPaper('A4', 'landscape');
+
+            $dataPDF    =   ['idPembelian' => $idPembelian];
+
+            $this->pdf->load_view('pembelian/suratJalan', $dataPDF);
+        }
+        public function exportDetailPembelian($exportTo = 'pdf', $idPembelian = false){
+            $exportTo   =   trim(strtolower($exportTo));
+            
+            $detailPembelian    =   false;
+            
+            if($idPembelian !== false){
+                $this->db->where('id', $idPembelian);
+                $getDetailPembelian    =   $this->db->get('view_pembelian');
+
+                if($getDetailPembelian->num_rows() >= 1){
+                    $detailPembelian    =   $getDetailPembelian->row();
+                }
+            }
+
+            $dataPDF['detailPembelian']    =   $detailPembelian;
+
+            if($exportTo === 'pdf'){
+                $this->load->library('pdf');
+                $this->pdf->setPaper('A4', 'landscape');
+
+                $this->pdf->load_view('pembelian/exportDetailPembelian', $dataPDF);
             }
         }
     }

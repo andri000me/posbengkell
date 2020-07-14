@@ -28,14 +28,23 @@
                                     <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 col-xs-12">
                                         <div class="card">
                                             <div class="card-box p-3">
-                                                <h6>Pembelian #<?=$penjualanPending['id']?></h6>
+                                                <h6 class='mb-2'>Penjualan Bengkel <span class='text-info'><?=$penjualanPending['idBengkel']?></span></h6>
+                                                <span class="text-muted">
+                                                    Nomor Transaksi <span class="badge badge-success"><?=$penjualanPending['nomorTransaksi']?></span>
+                                                </span>
 
                                                 <p class="text-success mt-3" style='font-size:15pt'>Rp. <?=number_format($penjualanPending['totalBelanja'])?></p>
                                                 <hr />
-                                                <a href='<?=site_url("lanjutkan-penjualan-pending/")?><?=$penjualanPending['id']?>'>
-                                                    <button class="btn btn-success btn-sm mr-1">
+                                                <a href='<?=site_url("cek-item-penjualan/")?><?=$penjualanPending['id']?>'>
+                                                    <button class="btn btn-success btn-sm mr-1 mb-1 btn-block">
                                                         <span class="fa fa-shopping-cart mr-2"></span>
-                                                        Lanjutkan
+                                                        Cek Item
+                                                    </button>
+                                                </a>
+                                                <a href='<?=site_url("cetak-surat-jalan-penjualan/")?><?=$penjualanPending['id']?>'>
+                                                    <button class="btn btn-warning btn-sm mr-1 btn-block">
+                                                        <span class="fa fa-print mr-2"></span>
+                                                        Cetak Surat Jalan
                                                     </button>
                                                 </a>
                                             </div>

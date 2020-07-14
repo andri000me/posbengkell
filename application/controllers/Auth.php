@@ -74,10 +74,12 @@ class Auth extends CI_Controller{
 	}
     
     public function logout(){
-		$this->session->unset_userdata('userdata');
-		$this->session->unset_userdata('roleuser');
-		$this->session->unset_userdata('idbengkel');
-		$this->session->unset_userdata('idPembelian');
+		// $this->session->unset_userdata('userdata');
+		// $this->session->unset_userdata('roleuser');
+		// $this->session->unset_userdata('idbengkel');
+		// $this->session->unset_userdata('idPembelian');
+
+		$this->session->sess_destroy();
 
 		redirect('/', 'refresh');
 	}

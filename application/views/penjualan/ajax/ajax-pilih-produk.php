@@ -6,10 +6,6 @@
     let tagihan         =   Number.parseInt(<?=$grandTotal?>);
     let idPenjualan     =   Number.parseInt(<?=$idPenjualan?>);
     
-    let diskonTyped         =   0;
-    let tunaiBayar          =   0;
-    let tagihanMutable      =   tagihan;
-
     $('#cariProduk').autocomplete({
         source  :   '<?=site_url("auto-complete-sparepart?select=nama,kode_barang,harga_jual,id")?>',
         select  :   function(event, value){
@@ -101,7 +97,7 @@
     }
 
     function selesai(){
-        let dataPOST    =   {idPenjualan, tunai : tunaiBayar, diskon : diskonTyped};
+        let dataPOST    =   {idPenjualan};
         $.ajax({
             url     :   '<?=site_url('selesaikan-penjualan')?>',
             data    :   dataPOST,
@@ -120,36 +116,4 @@
             }
         });
     }
-
-    function diskonHandler(thisContext){
-        let el  =   $(thisContext);
-        diskonTyped     =   Number.parseInt(el.val());
-
-        if(diskonTyped > tagihan){
-            $('#diskonNotification').html('<span class="text-danger">Diskon Tidak Boleh Lebih Besar dari Tagihan</span>');
-        }else{
-            $('#diskonNotification').empty();
-        }
-
-        tagihanMutable    =   tagihan - diskonTyped;
-
-        toggleShowSelesai();
-    }
-
-    function tunaiHandler(thisContext){
-        let el  =   $(thisContext);
-        tunaiBayar  =   Number.parseInt(el.val());
-        toggleShowSelesai();
-    }
-
-    function toggleShowSelesai() {
-        let isTunaiOK   =   tunaiBayar >= tagihanMutable;
-        if(isTunaiOK){
-            $('#btnSelesai').html(btnSelesai);
-        }else{
-            $('#btnSelesai').empty();
-        }
-    }
-
-    toggleShowSelesai();
 </script>

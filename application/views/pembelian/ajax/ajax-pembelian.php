@@ -27,7 +27,13 @@
                 {data : null, render : function(data){
                     return  `${new Date(data.waktu).toDateString()}`;
                 }},
-                {data :"statusBelanja"},  
+                {data : null, render : function(data){
+                    let badge   =   'badge badge-success';
+                    if(data.statusBelanja.toLowerCase() === 'batal'){
+                        badge   =   'badge badge-danger';
+                    }
+                    return  `<span class='${badge}'>${data.statusBelanja}</span>`;
+                }},  
                 {data : null, render : function(data){
                     return `Rp. ${numeral(data.totalBelanja).format('0,0')}`;
                 }},
@@ -39,11 +45,8 @@
                         return  `<a href='<?=site_url('detail-pembelian/')?>${data.id}' title='Detail Pembelian'>
                                     <span class='fa fa-list opsi text-info cp'></span>
                                 </a>
-                                <a href='<?=site_url('pembelian-export/excel/')?>${data.id}' title='Export ke Excel'>
-                                    <span class='fa fa-file-excel-o text-success cp opsi ml-2 mr-2'></span>
-                                </a>
                                 <a href='<?=site_url('pembelian-export/pdf/')?>${data.id}' title='Export ke PDF'>
-                                    <span class='fa fa-file-pdf-o text-warning cp opsi'></span>
+                                    <span class='ml-2 fa fa-file-pdf-o text-warning cp opsi'></span>
                                 </a>`;
                     }
                 }

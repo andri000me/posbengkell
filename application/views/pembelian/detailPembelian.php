@@ -116,6 +116,7 @@
                                                 <th class="text-right">Harga</th>
                                                 <th class="text-right">Quantity</th>
                                                 <th class="text-right">Total</th>
+                                                <th class='text-left'>P
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -130,6 +131,11 @@
                                                     <td class="text-right text-success">
                                                         <b>Rp. <?=number_format($item['totalHarga'])?></b>
                                                     </td>
+                                                    <td class='text-left'>
+                                                        <span class='badge badge-<?=($item['produkAda'] == 1)? 'success' : 'danger'?>'>
+                                                            <?=($item['produkAda'] == 1)? 'Tersedia' : 'Tidak Tersedia'?>
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
@@ -142,6 +148,12 @@
                                         <p class='text-danger'>Pembelian ini tidak memiliki item pembelian !</p>
                                     </div>
                                 <?php } ?>
+                                <hr />
+                                <a href='<?=site_url('detail-pembelian-pdf/')?><?=$idPembelian?>'>
+                                    <button class='btn btn-warning'>
+                                        Download Detail Pembelian (PDF)
+                                    </button>
+                                </a>
                             </div>
                         <?php }else{ ?>
                             <div class="text-center py-4">

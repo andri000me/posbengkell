@@ -19,32 +19,28 @@
             <div class="col-xl-12">            
                 <div class="row">                
                     <?php 
-                        $this->db->where('statusBelanja', 'pending');
-                        $listPembelianPending   =   $this->db->get('view_pembelian');
+                        $this->db->where('statusPenjualan', 'selesai');
+                        $listPenjualanSelesai   =   $this->db->get('view_penjualan');
 
-                        if($listPembelianPending->num_rows() >= 1){
-                            foreach($listPembelianPending->result_array() as $pembelianPending){
+                        if($listPenjualanSelesai->num_rows() >= 1){
+                            foreach($listPenjualanSelesai->result_array() as $penjualanSelesai){
                                 ?>
                                     <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 col-xs-12">
                                         <div class="card">
                                             <div class="card-box p-3">
-                                                <h6>Pembelian dari Vendor <span class="text-info"><?=$pembelianPending['namaVendor']?></span></h6>
+                                                <h6 class='mb-2'>Penjualan Bengkel <span class='text-info'><?=$penjualanSelesai['idBengkel']?></span></h6>
                                                 <span class="text-muted">
-                                                    Nomor Transaksi <span class="badge badge-success"><?=$pembelianPending['nomorTransaksi']?></span>
+                                                    Nomor Transaksi <span class="badge badge-success"><?=$penjualanSelesai['nomorTransaksi']?></span>
                                                 </span>
 
-                                                <p class="text-success mt-3" style='font-size:15pt'>Rp. <?=number_format($pembelianPending['totalBelanja'])?></p>
+                                                <p class="text-success mt-3" style='font-size:15pt'>Rp. <?=number_format($penjualanSelesai['totalBelanja'])?></p>
                                                 <hr />
-                                                <a href='<?=site_url("lanjutkan-pembelian-pending/")?><?=$pembelianPending['id']?>'>
-                                                    <button class="btn btn-success btn-sm mr-1">
-                                                        <span class="fa fa-shopping-cart mr-2"></span>
-                                                        Lanjutkan
+                                                <a href='<?=site_url("pembayaran-penjualan-selesai/")?><?=$penjualanSelesai['id']?>'>
+                                                    <button class="btn btn-success btn-sm mr-1 mb-1 btn-block">
+                                                        <span class="fa fa-dollar mr-2"></span>
+                                                        Bayar
                                                     </button>
                                                 </a>
-                                                <button class="btn btn-danger btn-sm ml-1">
-                                                    <span class="fa fa-trash mr-2"></span>
-                                                    Batalkan
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -53,11 +49,11 @@
                         }else{
                     ?>
                         <div class="col-xl-12 text-center">
-                            <h4 class="text-danger mb-3">Pembelian Pending</h4>
+                            <h4 class="text-danger mb-3">Penjualan Selesai</h4>
                             <img src="<?=base_url('assets_new/img/search.png')?>" alt="Search" 
                                 class='m-auto d-block' style='width:150px;' />
                             <p class="text-danger mt-3">
-                                Tidak ada pembelian yang berstatus pending
+                                Tidak ada penjualan yang berstatus selesai
                             </p>
                         </div>
                     <?php } ?>

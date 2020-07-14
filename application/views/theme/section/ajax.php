@@ -86,6 +86,22 @@ if($page == 'pegawai'){
 		'idPenjualan'	=>	$idPenjualan
 	];
 	$this->load->view('penjualan/ajax/ajax-pilih-produk', $data);
+}elseif($page == 'cek-item-pembelian'){
+	$data 	=	[
+		'idPembelian'	=>	$idPembelian
+	];
+	$this->load->view('pembelian/ajax/ajax-cek-item-pembelian', $data);
+}elseif($page == 'cek-item-penjualan' || $page == 'penjualan-pending'){
+	$data 	=	[
+		'idPenjualan'	=>	$idPenjualan
+	];
+	$this->load->view('penjualan/ajax/ajax-cek-item-penjualan', $data);
+}elseif($page == 'pembayaran-penjualan-selesai'){
+	$data 	=	[
+		'grandTotal'	=>	$grandTotal,
+		'idPenjualan'	=>	$idPenjualan
+	];
+	$this->load->view('penjualan/ajax/ajax-pembayaran-penjualan-selesai', $data);
 }
 
 $this->load->view('notif/ajax/ajax-notif');
